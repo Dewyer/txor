@@ -1,6 +1,8 @@
 mod parser_error;
 mod cli_error;
+mod processor_error;
 
+pub use processor_error::*;
 pub use cli_error::*;
 pub use parser_error::*;
 use thiserror::Error;
@@ -12,4 +14,6 @@ pub enum TxorError {
     Cli(#[from] CliError),
     #[error("parser error: `{0}`")]
     Parser(#[from] ParserError),
+    #[error("processor error: `{0}`")]
+    Processor(#[from] ProcessorError),
 }
