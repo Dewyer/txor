@@ -1,0 +1,21 @@
+[package]
+name = "txor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+# Reading CSV data
+csv-async = { version = "1.2.4", features = ["with_serde", "tokio"] }
+serde = { version = "1.0", features = ["derive"] }
+
+# Error handling
+thiserror = "1.0.31"
+
+# Async stream
+async-stream = "0.3.3"
+tokio-stream = "0.1.9"
+tokio = { version = "1.19.2", features = ["full"] }
+futures-util = "0.3"
+futures = "0.3.21"
+futures-core = "0.3.21"
