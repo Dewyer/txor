@@ -23,6 +23,7 @@ impl TransactionSource {
                 .trim(csv_async::Trim::All)
                 .create_deserializer(self.reader);
             let mut records = rdr.deserialize::<RawTransaction>();
+
             while let Some(result) = records.next().await {
                 yield result
                     .map_err(|err| TxorError::Parser(ParserError::CsvError(err)))

@@ -16,6 +16,12 @@ pub struct RawTransaction {
     pub amount: Option<f64>,
 }
 
+const MONEY_PRECISION: f64 = 1000f64;
+
+fn parse_amount(amount: Option<f64>) -> Result<i64, ParserError> {
+    Ok((amount.ok_or(ParserError::TransactionMissingAmount)? * MONEY_PRECISION) as i64)
+}
+
 impl TryFrom<RawTransaction> for Transaction {
     type Error = ParserError;
 
@@ -24,12 +30,12 @@ impl TryFrom<RawTransaction> for Transaction {
             "deposit" => Ok(Transaction::Deposit {
                 client_id: ClientId::new(value.client_id),
                 transaction_id: TransactionId::new(value.transaction_id),
-                amount: value.amount.ok_or(Self::Error::TransactionMissingAmount)?,
+                amount: parse_amount(value.amount)?,
             }),
             "withdrawal" => Ok(Transaction::Withdraw {
                 client_id: ClientId::new(value.client_id),
                 transaction_id: TransactionId::new(value.transaction_id),
-                amount: value.amount.ok_or(Self::Error::TransactionMissingAmount)?,
+                amount: parse_amount(value.amount)?,
             }),
             _ => Err(Self::Error::UnknownTransactionType),
         }

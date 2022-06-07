@@ -19,3 +19,8 @@ tokio = { version = "1.19.2", features = ["full"] }
 futures-util = "0.3"
 futures = "0.3.21"
 futures-core = "0.3.21"
+
+# Log
+log = "0.4.17"
+fern = "0.6.1"
+chrono = "0.4.19"

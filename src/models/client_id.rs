@@ -1,4 +1,4 @@
-#[derive(serde::Serialize, serde::Deserialize, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Copy, Clone)]
 pub struct ClientId(u16);
 
 impl ClientId {
