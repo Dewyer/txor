@@ -4,8 +4,8 @@ mod take_result_and_exit;
 use std::env;
 use log::info;
 use crate::errors::{CliError, TxorError};
-use crate::processor::TransactionProcessor;
-use crate::TransactionSource;
+use crate::parser::CsvTransactionSource;
+use crate::processor::{InMemoryProcessorLedger, TransactionProcessor};
 
 async fn run_cli_main() -> Result<(), TxorError> {
     let args: Vec<String> = env::args().skip(1).collect();
@@ -19,8 +19,10 @@ async fn run_cli_main() -> Result<(), TxorError> {
         .await
         .map_err(|err| TxorError::Cli(CliError::InputFile(err)))?;
 
-    let txs = TransactionSource::from_reader(input_file);
-    let mut processor = TransactionProcessor::new();
+    let txs = CsvTransactionSource::from_reader(input_file);
+    let mut processor = TransactionProcessor::new(
+        InMemoryProcessorLedger::new(),
+    );
     processor.consume_source(txs).await;
 
     Ok(())
