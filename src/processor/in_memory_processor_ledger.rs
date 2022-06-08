@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::errors::ProcessorError;
 use crate::models::{ClientAccount, ClientId, StoredTransaction, TransactionId};
 use crate::processor::processor_ledger::ProcessorLedger;
 
@@ -24,6 +25,10 @@ impl ProcessorLedger for InMemoryProcessorLedger {
 
     fn store_transaction(&mut self, transaction_id: TransactionId, transaction: StoredTransaction) {
         self.processed_transaction.insert(transaction_id, transaction);
+    }
+
+    fn has_stored_transaction(&self,  transaction_id: TransactionId) -> bool {
+        self.processed_transaction.contains_key(&transaction_id)
     }
 
     fn into_client_accounts(mut self) -> Vec<ClientAccount> {

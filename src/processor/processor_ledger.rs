@@ -5,5 +5,7 @@ pub trait ProcessorLedger {
 
     fn store_transaction(&mut self, transaction_id: TransactionId, transaction: StoredTransaction);
 
+    fn has_stored_transaction(&self,  transaction_id: TransactionId) -> bool;
+
     fn into_client_accounts(self) -> Vec<ClientAccount>;
 }

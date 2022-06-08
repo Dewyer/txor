@@ -1,0 +1,14 @@
+name = "Clients are persisted"
+description = "clients are persisted, and referenced by id"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 10.0
+deposit, 1, 2, 20.0\
+"""
+
+[output]
+[[output.clients]]
+id = 1
+available = 30_000
+held = 0
+locked = false

@@ -7,12 +7,13 @@ pub mod fixture_test;
 use std::env;
 use log::info;
 use tokio::fs::File;
+use tokio::io;
 use crate::errors::{CliError, TxorError};
 use crate::parser::CsvTransactionSource;
 use crate::processor::{InMemoryProcessorLedger, ProcessingOutput, TransactionProcessor};
 
-pub async fn process_file(input_file: File) -> ProcessingOutput {
-    let txs = CsvTransactionSource::from_reader(input_file);
+pub async fn process_reader(input_reader: impl io::AsyncRead  + 'static + Send + Unpin) -> ProcessingOutput {
+    let txs = CsvTransactionSource::from_reader(input_reader);
     let mut processor = TransactionProcessor::new(
         InMemoryProcessorLedger::new(),
     );
@@ -33,7 +34,7 @@ async fn run_cli_main() -> Result<(), TxorError> {
         .await
         .map_err(|err| TxorError::Cli(CliError::InputFile(err)))?;
 
-    let output = process_file(input_file).await;
+    let output = process_reader(input_file).await;
 
     write_processing_output::write_processing_output(output, tokio::io::stdout()).await?;
     Ok(())

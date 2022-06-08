@@ -1,0 +1,14 @@
+name = "Duplicate transaction id"
+description = "tx has to be unique, otherwise transaction is skipped"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 10.0
+deposit, 1, 1, 10.0\
+"""
+
+[output]
+[[output.clients]]
+id = 1
+available = 10_000
+held = 0
+locked = false

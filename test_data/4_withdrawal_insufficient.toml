@@ -1,0 +1,13 @@
+name = "Withdrawal while having insufficient funds"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 21.0
+withdrawal, 1, 2, 35.0\
+"""
+
+[output]
+[[output.clients]]
+id = 1
+available = 21_000
+held = 0
+locked = false

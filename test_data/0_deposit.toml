@@ -1,0 +1,12 @@
+name = "Simple deposit"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 10.0\
+"""
+
+[output]
+[[output.clients]]
+id = 1
+available = 10_000
+held = 0
+locked = false

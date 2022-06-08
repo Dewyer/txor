@@ -7,4 +7,6 @@ pub enum ProcessorError {
     ClientLocked(ClientId),
     #[error("client {0} doesn't has insufficient funds to perform transaction {1}, required: {2}")]
     InsufficientFunds(ClientId, TransactionId, MoneyCents),
+    #[error("transaction by this id already exists: `{0}`")]
+    TransactionAlreadyExists(TransactionId),
 }

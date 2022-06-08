@@ -1,4 +1,4 @@
-use crate::models::{ClientAccount, ClientId, DepositData, StoredTransaction, Transaction, WithdrawalData};
+use crate::models::{ClientAccount, ClientId, DepositData, StoredTransaction, Transaction, TransactionId, WithdrawalData};
 use futures_util::pin_mut;
 use futures_util::stream::StreamExt;
 use crate::errors::{ProcessorError};
@@ -27,7 +27,16 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         }
     }
 
+    fn assert_transaction_unique(&self, transaction_id: TransactionId) -> Result<(), ProcessorError> {
+        if self.ledger.has_stored_transaction(transaction_id) {
+            Err(ProcessorError::TransactionAlreadyExists(transaction_id))
+        } else {
+            Ok(())
+        }
+    }
+
     fn process_deposit(&mut self, deposit: DepositData) -> Result<(), ProcessorError> {
+        self.assert_transaction_unique(deposit.transaction_id)?;
         let client_account = self.get_or_create_unlocked_client(deposit.client_id)?;
 
         client_account.add_available(deposit.amount);
@@ -37,6 +46,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
     }
 
     fn process_withdrawal(&mut self, withdrawal: WithdrawalData) -> Result<(), ProcessorError> {
+        self.assert_transaction_unique(withdrawal.transaction_id)?;
         let client_account = self.get_or_create_unlocked_client(withdrawal.client_id)?;
 
         if client_account.get_available() < withdrawal.amount {
