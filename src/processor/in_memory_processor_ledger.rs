@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::errors::ProcessorError;
-use crate::models::{ClientAccount, ClientId, StoredTransaction, TransactionId};
+use crate::models::{ClientAccount, ClientId, DisputeState, StoredTransaction, TransactionId};
 use crate::processor::processor_ledger::ProcessorLedger;
 
 pub struct InMemoryProcessorLedger {
@@ -45,7 +45,7 @@ impl ProcessorLedger for InMemoryProcessorLedger {
 
     fn get_transactions_in_dispute(&self) -> Vec<TransactionId> {
         self.processed_transaction.values()
-            .filter(|tx| tx.is_disputed())
+            .filter(|tx| tx.get_dispute_state() == &DisputeState::Disputed)
             .map(|tx| tx.get_data().transaction_id)
             .collect()
     }

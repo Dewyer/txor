@@ -1,0 +1,17 @@
+name = "Client can't charge back transaction twice"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 10
+dispute, 1, 1,
+chargeback, 1, 1,
+chargeback, 1, 1,
+"""
+
+[output]
+transactions_in_dispute = []
+
+[[output.clients]]
+id = 1
+available = 0
+held = 0
+locked = true

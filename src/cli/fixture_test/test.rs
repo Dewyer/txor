@@ -26,7 +26,9 @@ pub fn initialize() {
 #[case("7_dis_no_access")]
 #[case("8_dis_started")]
 #[case("10_res_no_double")]
-#[case("11_res_re_dispute")]
+#[case("12_chb_simple")]
+#[case("13_chb_no_double")]
+#[case("14_chb_locked_acc")]
 #[tokio::test]
 async fn fixture_test(#[case] file_name: &str) {
     initialize();

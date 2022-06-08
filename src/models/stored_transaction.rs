@@ -1,16 +1,16 @@
-use crate::models::DepositData;
+use crate::models::{DepositData, DisputeState};
 
 #[derive(Clone)]
 pub struct StoredTransaction {
     data: DepositData,
-    disputed: bool,
+    dispute_state: DisputeState,
 }
 
 impl StoredTransaction {
     pub fn new(data: DepositData) -> Self {
         Self {
             data,
-            disputed: false,
+            dispute_state: DisputeState::Undisputed,
         }
     }
 
@@ -18,15 +18,15 @@ impl StoredTransaction {
         &self.data
     }
 
-    pub fn is_disputed(&self) -> bool {
-        self.disputed
+    pub fn get_dispute_state(&self) -> &DisputeState {
+        &self.dispute_state
     }
 
     pub fn dispute(&mut self) {
-        self.disputed = true;
+        self.dispute_state = DisputeState::Disputed;
     }
 
     pub fn remove_dispute(&mut self) {
-        self.disputed = false;
+        self.dispute_state = DisputeState::Undisputed;
     }
 }

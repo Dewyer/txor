@@ -1,4 +1,4 @@
-use crate::models::{ClientAccount, ClientId, DepositData, DisputeData, ResolutionData, StoredTransaction, Transaction, TransactionId, WithdrawalData};
+use crate::models::{ChargebackData, ClientAccount, ClientId, DepositData, DisputeData, DisputeState, ResolutionData, StoredTransaction, Transaction, TransactionId, WithdrawalData};
 use futures_util::pin_mut;
 use futures_util::stream::StreamExt;
 use crate::errors::{ProcessorError};
@@ -46,6 +46,31 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         }
     }
 
+    fn get_client_and_referenced_transaction(
+        &mut self,
+        client_id: ClientId,
+        transaction_id: TransactionId,
+        enforce_dispute_state: DisputeState,
+    ) -> Result<(&mut ClientAccount, StoredTransaction), ProcessorError> {
+        let stored_tx = self.ledger.get_stored_transaction(transaction_id)
+            .ok_or(ProcessorError::TransactionDoesntExists(transaction_id))?
+            .clone();
+        let client_account = self.get_or_create_unlocked_client(client_id)?;
+        Self::assert_client_has_access_to_transaction(&client_account, &stored_tx)?;
+
+        if stored_tx.get_dispute_state() != &enforce_dispute_state {
+            if enforce_dispute_state == DisputeState::Undisputed {
+                return Err(ProcessorError::TransactionAlreadyDisputed(transaction_id));
+            }
+
+            if enforce_dispute_state == DisputeState::Disputed {
+                return Err(ProcessorError::TransactionNotDisputed(transaction_id));
+            }
+        }
+
+        Ok((client_account, stored_tx))
+    }
+
     fn process_deposit(&mut self, deposit: DepositData) -> Result<(), ProcessorError> {
         self.assert_transaction_unique(deposit.transaction_id)?;
         let client_account = self.get_or_create_unlocked_client(deposit.client_id)?;
@@ -73,15 +98,11 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
     }
 
     fn process_dispute(&mut self, dispute: DisputeData) -> Result<(), ProcessorError> {
-        let stored_tx = self.ledger.get_stored_transaction(dispute.referenced_transaction_id)
-            .ok_or(ProcessorError::TransactionDoesntExists(dispute.referenced_transaction_id))?
-            .clone();
-        let client_account = self.get_or_create_unlocked_client(dispute.client_id)?;
-        Self::assert_client_has_access_to_transaction(&client_account, &stored_tx)?;
-
-        if stored_tx.is_disputed() {
-            return Err(ProcessorError::TransactionAlreadyDisputed(dispute.referenced_transaction_id));
-        }
+        let (client_account, stored_tx) = self.get_client_and_referenced_transaction(
+            dispute.client_id,
+            dispute.referenced_transaction_id,
+            DisputeState::Undisputed,
+        )?;
 
         client_account.hold(stored_tx.get_data().amount);
 
@@ -95,15 +116,11 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
     }
 
     fn process_resolution(&mut self, resolution: ResolutionData) -> Result<(), ProcessorError> {
-        let stored_tx = self.ledger.get_stored_transaction(resolution.referenced_transaction_id)
-            .ok_or(ProcessorError::TransactionDoesntExists(resolution.referenced_transaction_id))?
-            .clone();
-        let client_account = self.get_or_create_unlocked_client(resolution.client_id)?;
-        Self::assert_client_has_access_to_transaction(&client_account, &stored_tx)?;
-
-        if !stored_tx.is_disputed() {
-            return Err(ProcessorError::TransactionNotDisputed(resolution.referenced_transaction_id));
-        }
+        let (client_account, stored_tx) = self.get_client_and_referenced_transaction(
+            resolution.client_id,
+            resolution.referenced_transaction_id,
+            DisputeState::Disputed,
+        )?;
 
         client_account.un_hold(stored_tx.get_data().amount);
 
@@ -116,13 +133,34 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         Ok(())
     }
 
+    fn process_chargeback(&mut self, chargeback: ChargebackData) -> Result<(), ProcessorError> {
+        let (client_account, stored_tx) = self.get_client_and_referenced_transaction(
+            chargeback.client_id,
+            chargeback.referenced_transaction_id,
+            DisputeState::Disputed,
+        )?;
+
+        let chargeback_am = stored_tx.get_data().amount;
+        client_account.un_hold(chargeback_am);
+        client_account.remove_available(chargeback_am);
+        client_account.lock();
+
+        let stored_tx = self
+            .ledger
+            .get_stored_transaction_mut(chargeback.referenced_transaction_id)
+            .ok_or(ProcessorError::TransactionDoesntExists(chargeback.referenced_transaction_id))?;
+        stored_tx.remove_dispute();
+
+        Ok(())
+    }
+
     fn process_transaction(&mut self, transaction: Transaction) -> Result<(), ProcessorError> {
         match transaction {
             Transaction::Deposit(deposit) => self.process_deposit(deposit),
             Transaction::Withdrawal(withdrawal) => self.process_withdrawal(withdrawal),
             Transaction::Dispute(dispute) => self.process_dispute(dispute),
             Transaction::Resolution(resolution) => self.process_resolution(resolution),
-            _ => todo!(),
+            Transaction::Chargeback(chargeback) => self.process_chargeback(chargeback),
         }
     }
 

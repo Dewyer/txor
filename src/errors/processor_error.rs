@@ -9,7 +9,7 @@ pub enum ProcessorError {
     InsufficientFunds(ClientId, TransactionId, MoneyCents),
     #[error("transaction by this id(`{0}`) already exists")]
     TransactionAlreadyExists(TransactionId),
-    #[error("transaction by this id(`{0}`) doesn't exists")]
+    #[error("transaction by this id(`{0}`) doesn't exists or can't be disputed")]
     TransactionDoesntExists(TransactionId),
     #[error("transaction by this id(`{0}`) is already being disputed")]
     TransactionAlreadyDisputed(TransactionId),
