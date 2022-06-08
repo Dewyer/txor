@@ -1,3 +1,3 @@
-mod money_precision;
+mod money_unit_subdivisions;
 
-pub use money_precision::*;
+pub use money_unit_subdivisions::*;

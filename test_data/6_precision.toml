@@ -1,0 +1,13 @@
+name = "Money has 4 digits of precision"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 1.2345
+deposit, 1, 2, 20.6789\
+"""
+
+[output]
+[[output.clients]]
+id = 1
+available = 21_9134
+held = 0
+locked = false

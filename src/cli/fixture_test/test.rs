@@ -21,12 +21,13 @@ pub fn initialize() {
 #[case("2_duplicate_txid")]
 #[case("3_client_persistance")]
 #[case("4_withdrawal_insufficient")]
+#[case("5_no_tx")]
+#[case("6_precision")]
 #[tokio::test]
 async fn fixture_test(#[case] file_name: &str) {
     initialize();
 
     let test_case = read_test_case_from_file(file_name).await;
-    // log::info!("Running {} - test", test_case.name);
     let input_bytes = Box::leak(Box::new(test_case.input_csv.clone())).as_bytes();
     let output = process_reader(input_bytes)
         .await;

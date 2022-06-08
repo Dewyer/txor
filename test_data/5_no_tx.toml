@@ -1,0 +1,7 @@
+name = "No transactions"
+
+input_csv = """type, client, tx, amount\
+"""
+
+[output]
+clients = []

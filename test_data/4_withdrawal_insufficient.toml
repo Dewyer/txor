@@ -8,6 +8,6 @@ withdrawal, 1, 2, 35.0\
 [output]
 [[output.clients]]
 id = 1
-available = 21_000
+available = 21_0000
 held = 0
 locked = false

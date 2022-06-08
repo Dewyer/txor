@@ -2,10 +2,10 @@ use tokio::io::AsyncWrite;
 use crate::errors::CliError;
 use crate::models::MoneyCents;
 use crate::processor::ProcessingOutput;
-use crate::utils::MONEY_PRECISION;
+use crate::utils::MONEY_UNIT_SUBDIVISIONS;
 
 fn fmt_money_cents(money: MoneyCents) -> String {
-    (money / MONEY_PRECISION as i64).to_string()
+    (money / MONEY_UNIT_SUBDIVISIONS as i64).to_string()
 }
 
 pub async fn write_processing_output(output: ProcessingOutput, to: impl AsyncWrite + Unpin) -> Result<(), CliError> {

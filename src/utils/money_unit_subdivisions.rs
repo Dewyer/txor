@@ -1,0 +1,1 @@
+pub const MONEY_UNIT_SUBDIVISIONS: f64 = 10000f64;

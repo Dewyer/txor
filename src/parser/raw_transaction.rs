@@ -4,7 +4,7 @@
 use serde::{Serialize, Deserialize};
 use crate::errors::ParserError;
 use crate::models::{ClientId, Transaction, TransactionId, MoneyCents, DepositData, WithdrawalData, ResolutionData};
-use crate::utils::MONEY_PRECISION;
+use crate::utils::MONEY_UNIT_SUBDIVISIONS;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RawTransaction {
@@ -21,7 +21,7 @@ pub struct RawTransaction {
 }
 
 fn parse_positive_amount(amount: Option<f64>) -> Result<MoneyCents, ParserError> {
-    let converted_amount = (amount.ok_or(ParserError::TransactionMissingAmount)? * MONEY_PRECISION) as i64;
+    let converted_amount = (amount.ok_or(ParserError::TransactionMissingAmount)? * MONEY_UNIT_SUBDIVISIONS) as i64;
 
     if converted_amount < 0 {
         Err(ParserError::NegativeTransactionAmount)
@@ -61,7 +61,7 @@ impl TryFrom<RawTransaction> for Transaction {
 #[cfg(test)]
 mod tests {
     use crate::models::{ClientId, MoneyCents, Transaction, TransactionId};
-    use crate::parser::raw_transaction::{MONEY_PRECISION, RawTransaction};
+    use crate::parser::raw_transaction::{MONEY_UNIT_SUBDIVISIONS, RawTransaction};
 
     #[test]
     fn simple_deposit_parsable() {
@@ -75,7 +75,7 @@ mod tests {
         if let Transaction::Deposit(dps_tx) = tx {
             assert_eq!(dps_tx.client_id, ClientId::new(1));
             assert_eq!(dps_tx.transaction_id, TransactionId::new(1));
-            assert_eq!(dps_tx.amount, (100f64 * MONEY_PRECISION) as MoneyCents);
+            assert_eq!(dps_tx.amount, (100f64 * MONEY_UNIT_SUBDIVISIONS) as MoneyCents);
         } else {
             panic!("expected a deposit transaction");
         }

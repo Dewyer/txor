@@ -9,6 +9,6 @@ deposit, 1, 2, 20.0\
 [output]
 [[output.clients]]
 id = 1
-available = 30_000
+available = 30_0000
 held = 0
 locked = false
