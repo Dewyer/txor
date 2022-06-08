@@ -1,17 +1,17 @@
-use crate::models::{ Transaction };
 use super::raw_transaction::RawTransaction;
-use async_stream::stream;
 use crate::errors::{ParserError, TxorError};
-use tokio::io;
-use futures::stream::StreamExt;
+use crate::models::Transaction;
 use crate::parser::{TransactionSource, TransactionStream};
+use async_stream::stream;
+use futures::stream::StreamExt;
+use tokio::io;
 
 pub struct CsvTransactionSource {
     reader: Box<dyn io::AsyncRead + Send + Unpin>,
 }
 
 impl CsvTransactionSource {
-    pub fn from_reader(reader: impl io::AsyncRead  + 'static + Send + Unpin) -> Self {
+    pub fn from_reader(reader: impl io::AsyncRead + 'static + Send + Unpin) -> Self {
         Self {
             reader: Box::new(reader),
         }

@@ -6,3 +6,6 @@
 .idea
 
 docs/notes.md
+
+test_data/txs.csv
+test_data/accounts.csv

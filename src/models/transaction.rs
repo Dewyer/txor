@@ -1,6 +1,6 @@
-use crate::models::{ClientId, TransactionId};
-use serde::{Serialize, Deserialize};
 use crate::models::money_cents::MoneyCents;
+use crate::models::{ClientId, TransactionId};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialOrd, PartialEq, Clone)]
 pub struct AssetMovementData {

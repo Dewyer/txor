@@ -1,12 +1,11 @@
-mod parser_error;
 mod cli_error;
+mod parser_error;
 mod processor_error;
 
-pub use processor_error::*;
 pub use cli_error::*;
 pub use parser_error::*;
+pub use processor_error::*;
 use thiserror::Error;
-
 
 #[derive(Error, Debug)]
 pub enum TxorError {

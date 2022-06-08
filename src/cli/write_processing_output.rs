@@ -1,17 +1,18 @@
-use tokio::io::AsyncWrite;
 use crate::errors::CliError;
 use crate::models::MoneyCents;
 use crate::processor::ProcessingOutput;
 use crate::utils::MONEY_UNIT_SUBDIVISIONS;
+use tokio::io::AsyncWrite;
 
 fn fmt_money_cents(money: MoneyCents) -> String {
-    (money / MONEY_UNIT_SUBDIVISIONS as i64).to_string()
+    (money as f64 / MONEY_UNIT_SUBDIVISIONS).to_string()
 }
 
-pub async fn write_processing_output(output: ProcessingOutput, to: impl AsyncWrite + Unpin) -> Result<(), CliError> {
-    let mut wri = csv_async::AsyncWriter::from_writer(
-        to,
-    );
+pub async fn write_processing_output(
+    output: ProcessingOutput,
+    to: impl AsyncWrite + Unpin,
+) -> Result<(), CliError> {
+    let mut wri = csv_async::AsyncWriter::from_writer(to);
 
     wri.write_record(&["client", "available", "held", "total", "locked"])
         .await?;
@@ -24,7 +25,7 @@ pub async fn write_processing_output(output: ProcessingOutput, to: impl AsyncWri
             fmt_money_cents(client.get_total()),
             client.is_locked().to_string(),
         ])
-            .await?;
+        .await?;
     }
 
     Ok(())

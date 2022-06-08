@@ -1,5 +1,5 @@
 use crate::models::{ClientAccount, TransactionId};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct ProcessingOutput {

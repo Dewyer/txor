@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-use crate::errors::ProcessorError;
 use crate::models::{ClientAccount, ClientId, DisputeState, StoredTransaction, TransactionId};
 use crate::processor::processor_ledger::ProcessorLedger;
+use std::collections::HashMap;
 
 pub struct InMemoryProcessorLedger {
     clients: HashMap<ClientId, ClientAccount>,
@@ -19,19 +18,24 @@ impl InMemoryProcessorLedger {
 
 impl ProcessorLedger for InMemoryProcessorLedger {
     fn get_or_create_client(&mut self, client_id: ClientId) -> &mut ClientAccount {
-        self.clients.entry(client_id)
+        self.clients
+            .entry(client_id)
             .or_insert(ClientAccount::new(client_id))
     }
 
     fn store_transaction(&mut self, transaction_id: TransactionId, transaction: StoredTransaction) {
-        self.processed_transaction.insert(transaction_id, transaction);
+        self.processed_transaction
+            .insert(transaction_id, transaction);
     }
 
-    fn has_stored_transaction(&self,  transaction_id: TransactionId) -> bool {
+    fn has_stored_transaction(&self, transaction_id: TransactionId) -> bool {
         self.processed_transaction.contains_key(&transaction_id)
     }
 
-    fn get_stored_transaction_mut(&mut self, transaction_id: TransactionId) -> Option<&mut StoredTransaction> {
+    fn get_stored_transaction_mut(
+        &mut self,
+        transaction_id: TransactionId,
+    ) -> Option<&mut StoredTransaction> {
         self.processed_transaction.get_mut(&transaction_id)
     }
 
@@ -44,7 +48,8 @@ impl ProcessorLedger for InMemoryProcessorLedger {
     }
 
     fn get_transactions_in_dispute(&self) -> Vec<TransactionId> {
-        self.processed_transaction.values()
+        self.processed_transaction
+            .values()
             .filter(|tx| tx.get_dispute_state() == &DisputeState::Disputed)
             .map(|tx| tx.get_data().transaction_id)
             .collect()

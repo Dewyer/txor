@@ -1,10 +1,8 @@
-use std::env;
-
-mod processor;
+mod cli;
+mod errors;
 mod models;
 mod parser;
-mod errors;
-mod cli;
+mod processor;
 mod utils;
 
 #[tokio::main]

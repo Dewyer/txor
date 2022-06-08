@@ -1,5 +1,5 @@
-use std::io;
 use log::SetLoggerError;
+use std::io;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

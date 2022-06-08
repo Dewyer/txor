@@ -1,6 +1,6 @@
-use crate::models::ClientId;
 use crate::models::money_cents::MoneyCents;
-use serde::{Serialize, Deserialize};
+use crate::models::ClientId;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct ClientAccount {

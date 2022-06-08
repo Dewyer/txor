@@ -7,7 +7,10 @@ pub trait ProcessorLedger {
 
     fn has_stored_transaction(&self, transaction_id: TransactionId) -> bool;
 
-    fn get_stored_transaction_mut(&mut self, transaction_id: TransactionId) -> Option<&mut StoredTransaction>;
+    fn get_stored_transaction_mut(
+        &mut self,
+        transaction_id: TransactionId,
+    ) -> Option<&mut StoredTransaction>;
 
     fn get_stored_transaction(&self, transaction_id: TransactionId) -> Option<&StoredTransaction>;
 

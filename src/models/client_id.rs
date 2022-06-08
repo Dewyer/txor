@@ -1,6 +1,8 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Copy, Clone)]
+#[derive(
+    serde::Serialize, serde::Deserialize, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Copy, Clone,
+)]
 pub struct ClientId(u16);
 
 impl Display for ClientId {

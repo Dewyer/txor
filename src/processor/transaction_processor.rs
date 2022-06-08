@@ -1,10 +1,13 @@
-use crate::models::{ChargebackData, ClientAccount, ClientId, DepositData, DisputeData, DisputeState, ResolutionData, StoredTransaction, Transaction, TransactionId, WithdrawalData};
+use crate::errors::ProcessorError;
+use crate::models::{
+    ChargebackData, ClientAccount, ClientId, DepositData, DisputeData, DisputeState,
+    ResolutionData, StoredTransaction, Transaction, TransactionId, WithdrawalData,
+};
+use crate::parser::TransactionSource;
+use crate::processor::processor_ledger::ProcessorLedger;
+use crate::processor::ProcessingOutput;
 use futures_util::pin_mut;
 use futures_util::stream::StreamExt;
-use crate::errors::{ProcessorError};
-use crate::parser::TransactionSource;
-use crate::processor::ProcessingOutput;
-use crate::processor::processor_ledger::ProcessorLedger;
 
 pub struct TransactionProcessor<Ledger: ProcessorLedger> {
     ledger: Ledger,
@@ -12,12 +15,13 @@ pub struct TransactionProcessor<Ledger: ProcessorLedger> {
 
 impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
     pub fn new(ledger: Ledger) -> Self {
-        Self {
-            ledger,
-        }
+        Self { ledger }
     }
 
-    fn get_or_create_unlocked_client(&mut self, client_id: ClientId) -> Result<&mut ClientAccount, ProcessorError> {
+    fn get_or_create_unlocked_client(
+        &mut self,
+        client_id: ClientId,
+    ) -> Result<&mut ClientAccount, ProcessorError> {
         let client = self.ledger.get_or_create_client(client_id);
 
         if client.is_locked() {
@@ -27,7 +31,10 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         }
     }
 
-    fn assert_transaction_unique(&self, transaction_id: TransactionId) -> Result<(), ProcessorError> {
+    fn assert_transaction_unique(
+        &self,
+        transaction_id: TransactionId,
+    ) -> Result<(), ProcessorError> {
         if self.ledger.has_stored_transaction(transaction_id) {
             Err(ProcessorError::TransactionAlreadyExists(transaction_id))
         } else {
@@ -35,7 +42,10 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         }
     }
 
-    fn assert_client_has_access_to_transaction(client_account: &ClientAccount, stored_tx: &StoredTransaction) -> Result<(), ProcessorError> {
+    fn assert_client_has_access_to_transaction(
+        client_account: &ClientAccount,
+        stored_tx: &StoredTransaction,
+    ) -> Result<(), ProcessorError> {
         if client_account.get_id() != stored_tx.get_data().client_id {
             Err(ProcessorError::ClientInsufficientAccess(
                 client_account.get_id(),
@@ -52,7 +62,9 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         transaction_id: TransactionId,
         enforce_dispute_state: DisputeState,
     ) -> Result<(&mut ClientAccount, StoredTransaction), ProcessorError> {
-        let stored_tx = self.ledger.get_stored_transaction(transaction_id)
+        let stored_tx = self
+            .ledger
+            .get_stored_transaction(transaction_id)
             .ok_or(ProcessorError::TransactionDoesntExists(transaction_id))?
             .clone();
         let client_account = self.get_or_create_unlocked_client(client_id)?;
@@ -76,7 +88,8 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         let client_account = self.get_or_create_unlocked_client(deposit.client_id)?;
 
         client_account.add_available(deposit.amount);
-        self.ledger.store_transaction(deposit.transaction_id, StoredTransaction::new(deposit));
+        self.ledger
+            .store_transaction(deposit.transaction_id, StoredTransaction::new(deposit));
 
         Ok(())
     }
@@ -89,7 +102,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
             return Err(ProcessorError::InsufficientFunds(
                 withdrawal.client_id,
                 withdrawal.transaction_id,
-                withdrawal.amount
+                withdrawal.amount,
             ));
         }
 
@@ -109,7 +122,9 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         let stored_tx = self
             .ledger
             .get_stored_transaction_mut(dispute.referenced_transaction_id)
-            .ok_or(ProcessorError::TransactionDoesntExists(dispute.referenced_transaction_id))?;
+            .ok_or(ProcessorError::TransactionDoesntExists(
+                dispute.referenced_transaction_id,
+            ))?;
         stored_tx.dispute();
 
         Ok(())
@@ -127,7 +142,9 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         let stored_tx = self
             .ledger
             .get_stored_transaction_mut(resolution.referenced_transaction_id)
-            .ok_or(ProcessorError::TransactionDoesntExists(resolution.referenced_transaction_id))?;
+            .ok_or(ProcessorError::TransactionDoesntExists(
+                resolution.referenced_transaction_id,
+            ))?;
         stored_tx.remove_dispute();
 
         Ok(())
@@ -148,7 +165,9 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         let stored_tx = self
             .ledger
             .get_stored_transaction_mut(chargeback.referenced_transaction_id)
-            .ok_or(ProcessorError::TransactionDoesntExists(chargeback.referenced_transaction_id))?;
+            .ok_or(ProcessorError::TransactionDoesntExists(
+                chargeback.referenced_transaction_id,
+            ))?;
         stored_tx.remove_dispute();
 
         Ok(())
@@ -165,8 +184,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
     }
 
     pub async fn consume_source(&mut self, source: impl TransactionSource) {
-        let txs = source
-            .stream_transactions();
+        let txs = source.stream_transactions();
         pin_mut!(txs);
 
         while let Some(transaction_res) = txs.next().await {
@@ -175,7 +193,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
                     self.process_transaction(transaction)
                         .err()
                         .map(|error| log::warn!("error while processing transaction: {}", error));
-                },
+                }
                 Err(error) => log::warn!("found unprocessable transaction: {:?}", error),
             }
         }

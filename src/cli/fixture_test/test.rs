@@ -1,10 +1,8 @@
-use tokio::fs::File;
-use tokio::io::AsyncReadExt;
-use super::super::{process_reader, write_processing_output};
+use super::super::process_reader;
 
-use rstest::{rstest};
 use crate::cli::fixture_test::test_case::read_test_case_from_file;
 use crate::cli::setup_logs::setup_logs;
+use rstest::rstest;
 use std::sync::Once;
 
 static INIT: Once = Once::new();
@@ -37,11 +35,16 @@ async fn fixture_test(#[case] file_name: &str) {
 
     let test_case = read_test_case_from_file(file_name).await;
     let input_bytes = Box::leak(Box::new(test_case.input_csv.clone())).as_bytes();
-    let mut output = process_reader(input_bytes)
-        .await;
+    let mut output = process_reader(input_bytes).await;
 
-    output.clients.sort_by(|aa, bb| aa.get_id().cmp(&bb.get_id()));
+    output
+        .clients
+        .sort_by(|aa, bb| aa.get_id().cmp(&bb.get_id()));
     output.transactions_in_dispute.sort();
 
-    assert_eq!(output, test_case.output, "test case: {}, expected to match output", test_case.name);
+    assert_eq!(
+        output, test_case.output,
+        "test case: {}, expected to match output",
+        test_case.name
+    );
 }
