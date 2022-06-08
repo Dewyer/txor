@@ -29,6 +29,8 @@ pub fn initialize() {
 #[case("12_chb_simple")]
 #[case("13_chb_no_double")]
 #[case("14_chb_locked_acc")]
+#[case("15_dis_withdrawn")]
+#[case("16_chb_withdrawn")]
 #[tokio::test]
 async fn fixture_test(#[case] file_name: &str) {
     initialize();

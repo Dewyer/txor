@@ -1,0 +1,16 @@
+name = "Client disputes transaction but its already partially withdrawn"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 12
+withdrawal, 1, 2, 6
+dispute, 1, 1,
+"""
+
+[output]
+transactions_in_dispute = [1]
+
+[[output.clients]]
+id = 1
+available = -6_0000
+held = 12_0000
+locked = false
