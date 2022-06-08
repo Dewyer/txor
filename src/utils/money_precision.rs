@@ -1,0 +1,1 @@
+pub const MONEY_PRECISION: f64 = 1000f64;

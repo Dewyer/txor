@@ -1,4 +1,3 @@
-use std::cell::Ref;
 use crate::models::{ClientId, TransactionId};
 use serde::{Serialize, Deserialize};
 use crate::models::money_cents::MoneyCents;

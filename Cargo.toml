@@ -24,3 +24,6 @@ futures-core = "0.3.21"
 log = "0.4.17"
 fern = "0.6.1"
 chrono = "0.4.19"
+
+[dev-dependencies]
+rstest = "0.13.0"

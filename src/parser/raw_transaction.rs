@@ -1,6 +1,10 @@
+//! Raw transaction, this type of structure is required for deserializing from a csv file
+//! Because currently the csv library doesn't support internally tagged enums
+
 use serde::{Serialize, Deserialize};
 use crate::errors::ParserError;
-use crate::models::{ClientId, Transaction, TransactionId, MoneyCents, DepositData, WithdrawalData, DisputeData, ResolutionData, ChargebackData};
+use crate::models::{ClientId, Transaction, TransactionId, MoneyCents, DepositData, WithdrawalData, ResolutionData};
+use crate::utils::MONEY_PRECISION;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RawTransaction {
@@ -15,8 +19,6 @@ pub struct RawTransaction {
 
     pub amount: Option<f64>,
 }
-
-const MONEY_PRECISION: f64 = 1000f64;
 
 fn parse_positive_amount(amount: Option<f64>) -> Result<MoneyCents, ParserError> {
     let converted_amount = (amount.ok_or(ParserError::TransactionMissingAmount)? * MONEY_PRECISION) as i64;
@@ -39,8 +41,8 @@ impl TryFrom<RawTransaction> for Transaction {
 
         match value.type_str.as_str() {
             "deposit" => Ok(Transaction::Deposit(DepositData {
-                client_id: ClientId::new(value.client_id),
-                transaction_id: TransactionId::new(value.transaction_id),
+                client_id: referential_data.client_id,
+                transaction_id: referential_data.referenced_transaction_id,
                 amount: parse_positive_amount(value.amount)?,
             })),
             "withdrawal" => Ok(Transaction::Withdrawal(WithdrawalData {

@@ -1,4 +1,4 @@
-use crate::errors::{CliError, TxorError};
+use crate::errors::{TxorError};
 
 pub fn setup_logs(is_verbose: bool) -> Result<(), TxorError> {
     fern::Dispatch::new()

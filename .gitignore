@@ -1,11 +1,8 @@
 .hidden
 
-
 # Added by cargo
-
 /target
-.idea
 
-test_data
+.idea
 
 docs/notes.md

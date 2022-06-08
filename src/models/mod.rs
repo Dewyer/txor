@@ -3,7 +3,9 @@ mod client_id;
 mod transaction_id;
 mod client_account;
 mod money_cents;
+mod stored_transaction;
 
+pub use stored_transaction::*;
 pub use client_account::*;
 pub use client_id::*;
 pub use transaction::*;

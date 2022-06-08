@@ -10,4 +10,6 @@ pub enum CliError {
     LoggerSetup(#[from] SetLoggerError),
     #[error("input file couldnt be read: `{0}`")]
     InputFile(#[from] io::Error),
+    #[error("output couldn't be written to: `{0}`")]
+    OutputWriting(#[from] csv_async::Error),
 }

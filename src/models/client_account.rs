@@ -25,6 +25,14 @@ impl ClientAccount {
         self.available + self.held
     }
 
+    pub fn get_available(&self) -> MoneyCents {
+        self.available
+    }
+
+    pub fn get_held(&self) -> MoneyCents {
+        self.held
+    }
+
     pub fn get_id(&self) -> ClientId {
         self.id
     }
@@ -37,6 +45,10 @@ impl ClientAccount {
         self.available += amount;
     }
 
+    pub fn remove_available(&mut self, amount: MoneyCents) {
+        self.add_available(-amount);
+    }
+
     pub fn hold(&mut self, amount: MoneyCents) {
         self.available -= amount;
         self.held += amount;
@@ -44,5 +56,9 @@ impl ClientAccount {
 
     pub fn un_hold(&mut self, amount: MoneyCents) {
         self.hold(-amount);
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.locked
     }
 }
