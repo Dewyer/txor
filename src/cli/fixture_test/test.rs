@@ -23,14 +23,21 @@ pub fn initialize() {
 #[case("4_withdrawal_insufficient")]
 #[case("5_no_tx")]
 #[case("6_precision")]
+#[case("7_dis_no_access")]
+#[case("8_dis_started")]
+#[case("10_res_no_double")]
+#[case("11_res_re_dispute")]
 #[tokio::test]
 async fn fixture_test(#[case] file_name: &str) {
     initialize();
 
     let test_case = read_test_case_from_file(file_name).await;
     let input_bytes = Box::leak(Box::new(test_case.input_csv.clone())).as_bytes();
-    let output = process_reader(input_bytes)
+    let mut output = process_reader(input_bytes)
         .await;
+
+    output.clients.sort_by(|aa, bb| aa.get_id().cmp(&bb.get_id()));
+    output.transactions_in_dispute.sort();
 
     assert_eq!(output, test_case.output, "test case: {}, expected to match output", test_case.name);
 }

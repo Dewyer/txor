@@ -1,4 +1,4 @@
-use crate::models::{ClientAccount, ClientId, DepositData, StoredTransaction, Transaction, TransactionId, WithdrawalData};
+use crate::models::{ClientAccount, ClientId, DepositData, DisputeData, ResolutionData, StoredTransaction, Transaction, TransactionId, WithdrawalData};
 use futures_util::pin_mut;
 use futures_util::stream::StreamExt;
 use crate::errors::{ProcessorError};
@@ -35,6 +35,17 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         }
     }
 
+    fn assert_client_has_access_to_transaction(client_account: &ClientAccount, stored_tx: &StoredTransaction) -> Result<(), ProcessorError> {
+        if client_account.get_id() != stored_tx.get_data().client_id {
+            Err(ProcessorError::ClientInsufficientAccess(
+                client_account.get_id(),
+                stored_tx.get_data().transaction_id,
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
     fn process_deposit(&mut self, deposit: DepositData) -> Result<(), ProcessorError> {
         self.assert_transaction_unique(deposit.transaction_id)?;
         let client_account = self.get_or_create_unlocked_client(deposit.client_id)?;
@@ -61,10 +72,56 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         Ok(())
     }
 
+    fn process_dispute(&mut self, dispute: DisputeData) -> Result<(), ProcessorError> {
+        let stored_tx = self.ledger.get_stored_transaction(dispute.referenced_transaction_id)
+            .ok_or(ProcessorError::TransactionDoesntExists(dispute.referenced_transaction_id))?
+            .clone();
+        let client_account = self.get_or_create_unlocked_client(dispute.client_id)?;
+        Self::assert_client_has_access_to_transaction(&client_account, &stored_tx)?;
+
+        if stored_tx.is_disputed() {
+            return Err(ProcessorError::TransactionAlreadyDisputed(dispute.referenced_transaction_id));
+        }
+
+        client_account.hold(stored_tx.get_data().amount);
+
+        let stored_tx = self
+            .ledger
+            .get_stored_transaction_mut(dispute.referenced_transaction_id)
+            .ok_or(ProcessorError::TransactionDoesntExists(dispute.referenced_transaction_id))?;
+        stored_tx.dispute();
+
+        Ok(())
+    }
+
+    fn process_resolution(&mut self, resolution: ResolutionData) -> Result<(), ProcessorError> {
+        let stored_tx = self.ledger.get_stored_transaction(resolution.referenced_transaction_id)
+            .ok_or(ProcessorError::TransactionDoesntExists(resolution.referenced_transaction_id))?
+            .clone();
+        let client_account = self.get_or_create_unlocked_client(resolution.client_id)?;
+        Self::assert_client_has_access_to_transaction(&client_account, &stored_tx)?;
+
+        if !stored_tx.is_disputed() {
+            return Err(ProcessorError::TransactionNotDisputed(resolution.referenced_transaction_id));
+        }
+
+        client_account.un_hold(stored_tx.get_data().amount);
+
+        let stored_tx = self
+            .ledger
+            .get_stored_transaction_mut(resolution.referenced_transaction_id)
+            .ok_or(ProcessorError::TransactionDoesntExists(resolution.referenced_transaction_id))?;
+        stored_tx.remove_dispute();
+
+        Ok(())
+    }
+
     fn process_transaction(&mut self, transaction: Transaction) -> Result<(), ProcessorError> {
         match transaction {
             Transaction::Deposit(deposit) => self.process_deposit(deposit),
             Transaction::Withdrawal(withdrawal) => self.process_withdrawal(withdrawal),
+            Transaction::Dispute(dispute) => self.process_dispute(dispute),
+            Transaction::Resolution(resolution) => self.process_resolution(resolution),
             _ => todo!(),
         }
     }
@@ -87,8 +144,10 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
     }
 
     pub fn into_output(self) -> ProcessingOutput {
+        let tx_disputed = self.ledger.get_transactions_in_dispute();
         ProcessingOutput {
             clients: self.ledger.into_client_accounts(),
+            transactions_in_dispute: tx_disputed,
         }
     }
 }

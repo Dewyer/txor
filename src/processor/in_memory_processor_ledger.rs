@@ -31,7 +31,22 @@ impl ProcessorLedger for InMemoryProcessorLedger {
         self.processed_transaction.contains_key(&transaction_id)
     }
 
+    fn get_stored_transaction_mut(&mut self, transaction_id: TransactionId) -> Option<&mut StoredTransaction> {
+        self.processed_transaction.get_mut(&transaction_id)
+    }
+
+    fn get_stored_transaction(&self, transaction_id: TransactionId) -> Option<&StoredTransaction> {
+        self.processed_transaction.get(&transaction_id)
+    }
+
     fn into_client_accounts(mut self) -> Vec<ClientAccount> {
         self.clients.drain().map(|(_, client)| client).collect()
+    }
+
+    fn get_transactions_in_dispute(&self) -> Vec<TransactionId> {
+        self.processed_transaction.values()
+            .filter(|tx| tx.is_disputed())
+            .map(|tx| tx.get_data().transaction_id)
+            .collect()
     }
 }

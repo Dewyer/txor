@@ -1,0 +1,22 @@
+name = "Client tries to dispute a transaction thats not his"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 1, 10
+deposit, 2, 2, 10
+dispute, 2, 1,
+"""
+
+[output]
+transactions_in_dispute = []
+
+[[output.clients]]
+id = 1
+available = 10_0000
+held = 0
+locked = false
+
+[[output.clients]]
+id = 2
+available = 10_0000
+held = 0
+locked = false

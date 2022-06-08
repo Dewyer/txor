@@ -6,6 +6,8 @@ withdrawal, 1, 2, 10.0\
 """
 
 [output]
+transactions_in_dispute = []
+
 [[output.clients]]
 id = 1
 available = 11_0000

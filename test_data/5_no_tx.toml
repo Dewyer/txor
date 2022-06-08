@@ -5,3 +5,4 @@ input_csv = """type, client, tx, amount\
 
 [output]
 clients = []
+transactions_in_dispute = []

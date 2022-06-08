@@ -6,8 +6,11 @@ deposit, 1, 2, 20.6789\
 """
 
 [output]
+transactions_in_dispute = []
+
 [[output.clients]]
 id = 1
 available = 21_9134
 held = 0
 locked = false
+
