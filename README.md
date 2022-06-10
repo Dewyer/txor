@@ -11,7 +11,7 @@ To ensure correctness, a number of fixture like tests have been written.
 These can be viewed in the `test_data` directory.
 
 Each test case is described by a TOML file of the following form:
-```toml
+```
 name = "<test name>" # just for readability purposes
 description = "<test name>" # just for readability purposes
 
