@@ -30,6 +30,7 @@ pub fn initialize() {
 #[case("15_dis_withdrawn")]
 #[case("16_chb_withdrawn")]
 #[case("17_dep_overflow_check")]
+#[case("18_mixed_complex")]
 #[tokio::test]
 async fn fixture_test(#[case] file_name: &str) {
     initialize();

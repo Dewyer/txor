@@ -1,0 +1,37 @@
+name = "Bringing all of this together, a mixed test case"
+
+input_csv = """type, client, tx, amount
+deposit, 1, 4, 10.0
+deposit, 2, 2, 80.888
+deposit, 3, 3, 2.0
+withdrawal, 1, 1, 5.0
+deposit, 1, 5, 100.233
+dispute, 2, 2,
+deposit, 1, 6, 22.0
+dispute, 1, 6,
+withdrawal, 2, 7, 9.7989
+resolve, 1, 6,
+dispute, 3, 3,
+chargeback, 3, 3,
+"""
+
+[output]
+transactions_in_dispute = [2]
+
+[[output.clients]]
+id = 1
+available = 1272330
+held = 0
+locked = false
+
+[[output.clients]]
+id = 2
+available = 0
+held = 808880
+locked = false
+
+[[output.clients]]
+id = 3
+available = 0
+held = 0
+locked = true
