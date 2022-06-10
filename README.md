@@ -59,20 +59,20 @@ cargo test -- --nocapture
 ## Code structure
 The cli tool is built from a few closely coupled pieces, with tight cohesion inside each part and a few shared modules.
 A list of all these modules and what are they responsible for:
-- CLI
+- **CLI**
   - Parses arguments
   - Sets up logging
   - Runs the processor
   - Writes results to the standard output
-- Parser
+- **Parser**
   - Defines the `TransactionSource` trait, which can abstracts away the streaming of transactions
   - Implements a parser that creates said source from an async readable
-- Processor
+- **Processor**
   - Implements the transaction processor
   - The processor can take a `TransactionSource` consume it
   - A processor can be turned into a processing output that tallies the client data
-- Errors (Shared code)
+- **Errors** (Shared code)
   - Defines all the error enums the rest of the program uses
   - Everything uses error enumeration for better usability in the future
-- Models (Shared code)
+- **Models** (Shared code)
   - Defines a few shared models (like `Transaction`) for use everywhere else

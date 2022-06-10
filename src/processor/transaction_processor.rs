@@ -87,7 +87,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         self.assert_transaction_unique(deposit.transaction_id)?;
         let client_account = self.get_or_create_unlocked_client(deposit.client_id)?;
 
-        client_account.add_available(deposit.amount);
+        client_account.add_available(deposit.amount)?;
         self.ledger
             .store_transaction(deposit.transaction_id, StoredTransaction::new(deposit));
 
@@ -106,7 +106,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
             ));
         }
 
-        client_account.remove_available(withdrawal.amount);
+        client_account.remove_available(withdrawal.amount)?;
         Ok(())
     }
 
@@ -117,7 +117,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
             DisputeState::Undisputed,
         )?;
 
-        client_account.hold(stored_tx.get_data().amount);
+        client_account.hold(stored_tx.get_data().amount)?;
 
         let stored_tx = self
             .ledger
@@ -137,7 +137,7 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
             DisputeState::Disputed,
         )?;
 
-        client_account.un_hold(stored_tx.get_data().amount);
+        client_account.un_hold(stored_tx.get_data().amount)?;
 
         let stored_tx = self
             .ledger
@@ -158,8 +158,8 @@ impl<Ledger: ProcessorLedger> TransactionProcessor<Ledger> {
         )?;
 
         let chargeback_am = stored_tx.get_data().amount;
-        client_account.un_hold(chargeback_am);
-        client_account.remove_available(chargeback_am);
+        client_account.un_hold(chargeback_am)?;
+        client_account.remove_available(chargeback_am)?;
         client_account.lock();
 
         let stored_tx = self

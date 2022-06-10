@@ -25,6 +25,9 @@ log = "0.4.17"
 fern = "0.6.1"
 chrono = "0.4.19"
 
+# Math
+num-traits = "0.2.15"
+
 [dev-dependencies]
 rstest = "0.13.0"
 toml = "0.5.9"

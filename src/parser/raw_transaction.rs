@@ -1,6 +1,7 @@
 //! Raw transaction, this type of structure is required for deserializing from a csv file
 //! Because currently the csv library doesn't support internally tagged enums
 
+use num_traits::ToPrimitive;
 use crate::errors::ParserError;
 use crate::models::{
     ClientId, DepositData, MoneyCents, ResolutionData, Transaction, TransactionId, WithdrawalData,
@@ -23,8 +24,9 @@ pub struct RawTransaction {
 }
 
 fn parse_positive_amount(amount: Option<f64>) -> Result<MoneyCents, ParserError> {
+    let amount_som = amount.ok_or(ParserError::TransactionMissingAmount)?;
     let converted_amount =
-        (amount.ok_or(ParserError::TransactionMissingAmount)? * MONEY_UNIT_SUBDIVISIONS) as i64;
+        (amount_som * MONEY_UNIT_SUBDIVISIONS).floor().to_i64().ok_or(ParserError::ArithmeticOverflow)?;
 
     if converted_amount < 0 {
         Err(ParserError::NegativeTransactionAmount)

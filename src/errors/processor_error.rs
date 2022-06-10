@@ -17,4 +17,6 @@ pub enum ProcessorError {
     TransactionNotDisputed(TransactionId),
     #[error("client `{0}` doesnt have access to transaction `{}`")]
     ClientInsufficientAccess(ClientId, TransactionId),
+    #[error("arithmetic overflow occurred while processing a transaction")]
+    ArithmeticOverflow,
 }

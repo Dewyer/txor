@@ -10,4 +10,6 @@ pub enum ParserError {
     NegativeTransactionAmount,
     #[error("csv parsing error occured: `{0}`")]
     CsvError(#[from] csv_async::Error),
+    #[error("arithmetic overflow occurred while parsing a transaction")]
+    ArithmeticOverflow,
 }

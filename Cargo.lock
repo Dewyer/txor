@@ -846,6 +846,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "log",
+ "num-traits",
  "rstest",
  "serde",
  "thiserror",
