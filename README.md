@@ -1,10 +1,10 @@
 # TXOR
 (Transact-or) A simple (toy) transaction processing CLI.
 
-*The specification for this project should be available to the reader to correctly use this software.*
+*The specification for this project should be available to the reader to use this software.*
 
-The program accepts a single input CSV file in the specified format.
-And outputs the results of the transactions to the standard output in a CSV format as well.
+The program accepts a single input file in the specified format (CSV).
+And outputs the results of the transactions to the standard output (in a CSV format as well).
 
 ## About Correctness
 To ensure correctness, a number of fixture like tests have been written.
